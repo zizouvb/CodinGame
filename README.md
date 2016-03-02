@@ -1,1 +1,3 @@
 # CodinGame
+
+Solutions of CodinGame
