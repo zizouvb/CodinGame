@@ -1,9 +1,5 @@
 # CodinGame
 
-Solutions of CodinGame
+Some solutions of CodinGame plateform
+https://www.codingame.com
 
-Todo :
-
-asciart : check space
-
-mime : to complete
