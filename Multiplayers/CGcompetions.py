@@ -3,6 +3,21 @@ import math
 
 # Auto-generated code below aims at helping you parse
 # the standard input according to the problem statement.
+# to do : 
+"""
+1 - Slow down on wreck
+2 - move doof
+3 - add grenade when rage
+
+"""
+class Player():
+    def __init__(self,player_id,reaper, destroyer,doof):
+        self.id = player_id
+        self.reaper = reaper
+        self.destroyer = destroyer
+        self.doof = doof
+
+
 
 class Unity():
     def __init__(self,unit_id, unit_type, player, mass, radius, x, y, vx, vy, extra, extra_2):
@@ -36,6 +51,10 @@ class Reaper(Unity):
         Unity.__init__(self,unit_id, unit_type, player, mass, radius, x, y, vx, vy, extra, extra_2)
         self.wreck = None 
         print("reaper instanciation", file=sys.stderr)
+
+    def move(self):
+        print(reaper.wreck.x-2*reaper.vx, reaper.wreck.y-2*reaper.vy, 300)
+
 
 class Doof(Unity):
     def __init__(self,unit_id, unit_type, player, mass, radius, x, y, vx, vy, extra, extra_2):
@@ -106,7 +125,8 @@ while True:
     if not reaper.wreck:
         print(destroyer.tanker.x,destroyer.tanker.y, 300)
     else:
-        print(reaper.wreck.x, reaper.wreck.y, 300)
+        reaper.move()
+        
     if not destroyer.tanker:
         print(0,0, 300)
     else:
