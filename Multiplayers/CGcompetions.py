@@ -1,6 +1,8 @@
 import sys
 import math
-
+import random
+import time
+import copy
 # Auto-generated code below aims at helping you parse
 # the standard input according to the problem statement.
 # to do : 
@@ -10,14 +12,15 @@ import math
 3 - add grenade when rage
 4 - add oil
 5 - add tar
-
-ressources
 https://github.com/git-knight/mad-starter/blob/master/main.cpp
 https://github.com/dreignier/fantastic-bits/blob/master/fantastic-bits.cpp
 https://github.com/CodinGame/MeanMax/blob/master/Referee.java
 check https://tech.io/playgrounds/1003/flocking-autonomous-agents/steering-strategy
 check if( u->type == Tanker && ( u->x * u->x + u->y * u->y > 6000 * 60000 )  --- u->extra < u->extra2
 """
+DEPTH = 3
+ANGLES_LIST = [0,45,90,135,180,225,270,315]
+THRUSTS_LIST = [0,100,300]
 
 SPAWN_WRECK = False;
 LOOTER_COUNT = 3;
@@ -219,6 +222,9 @@ class Looter(Unity):
         self.player = player
         self.radius = LOOTER_RADIUS
 
+    def applySolution(self,angle, thrust):
+        self.angle = angle
+        self.thrust = thrust
 
 class Reaper(Looter):
     def __init__(self,unit_id,unit_type, x, y,vx,vy, player):
@@ -230,7 +236,7 @@ class Reaper(Looter):
         self.wreck=None
         self.vx = vx
         self.vy = vy
-    def move(self):
+    def moveOld(self):
         print(reaper.wreck.x-2*reaper.vx, reaper.wreck.y-2*reaper.vy, 300)
 
 class Destroyer(Unity):
@@ -248,11 +254,70 @@ class Doof(Unity):
         self.friction = DOOF_FRICTION
         self.skill_cost = DOOF_SKILL_COST
         self.skill_range = DOOF_SKILL_RANGE
+
+class Solution():
+    def __init__(self):
+        self.score = -1
+        self.angles = [0]*DEPTH*LOOTER_COUNT
+        self.thrusts = [0]*DEPTH*LOOTER_COUNT
+        for i in range(DEPTH*LOOTER_COUNT):
+            self.randomize(i)
+
+    def mutate(self):
+        return copy.deepcopy(self)
+
+    def randomize(self,depth_idx):
+        self.angles[depth_idx] = random.choice(ANGLES_LIST)
+        self.thrusts[depth_idx] = random.choice(THRUSTS_LIST)
+       
     
+    def silverSol(self):
+        for wreck in list_wrecks:
+            if players[0].looters[LOOTER_REAPER].squared_distance(wreck)<players[0].looters[LOOTER_REAPER].squared_distance(players[0].looters[LOOTER_REAPER].wreck):
+                players[0].looters[LOOTER_REAPER].wreck = wreck 
+        reaper = players[0].looters[LOOTER_REAPER] 
+        destroyer = players[0].looters[LOOTER_DESTROYER] 
+        for tanker in list_tankers:
+            if destroyer.squared_distance(tanker)<destroyer.squared_distance(destroyer.tanker):
+                destroyer.tanker = tanker
+
 class Player():
     def __init__(self,player_id):
         self.id = player_id
-        self.looters = [0]*3
+        self.looters = [0]*LOOTER_COUNT
+        self.score = -1
+
+    def save(self):# to complete
+        return
+    def load(self):# to complete
+        return
+    def move(self,solution,looter_idx, turn):
+        self.looters[looter_idx].applySolution(solution.angles[3*looter_idx+turn],solution.thrusts[3*looter_idx+turn])
+
+    def getLootScore(self,solution,looter_idx):
+        turn = 0
+        while(turn<DEPTH):
+            self.move(solution,looter_idx, turn)
+            #play() 
+            #self.score += evaluate()
+
+    def getScore(self,solution):
+        for i in range(LOOTER_COUNT):
+            self.getLootScore(solution,i)
+            
+    def solve(self,time_to_stop,list_tankers,list_wrecks):
+
+        solution = Solution()
+        self.list_wrecks = list_wrecks
+        self.list_tankers = list_tankers
+        self.save()
+        self.getScore(solution)
+        child = Solution()
+        while(time.time()>time_to_stop):
+            child = solution.mutate()
+            if self.getScore(solution)<self.getScore(child):
+                solution = child
+
 
 players = [Player(0),Player(1),Player(2)]
 
@@ -295,15 +360,9 @@ while True:
             
     # Write an action using print
     # To debug: print("Debug messages...", file=sys.stderr)
-    
-    for wreck in list_wrecks:
-        if players[0].looters[LOOTER_REAPER].squared_distance(wreck)<players[0].looters[LOOTER_REAPER].squared_distance(players[0].looters[LOOTER_REAPER].wreck):
-                players[0].looters[LOOTER_REAPER].wreck = wreck 
-    reaper = players[0].looters[LOOTER_REAPER] 
-    destroyer = players[0].looters[LOOTER_DESTROYER] 
-    for tanker in list_tankers:
-        if destroyer.squared_distance(tanker)<destroyer.squared_distance(destroyer.tanker):
-                destroyer.tanker = tanker
+    time_limit = 40
+    players[0].solve(time_limit,list_wrecks,list_tankers)
+
 
 
     if not reaper.wreck:
